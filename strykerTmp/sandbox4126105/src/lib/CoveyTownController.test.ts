@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { nanoid } from 'nanoid';
 import { mock, mockDeep, mockReset } from 'jest-mock-extended';
 import { Socket } from 'socket.io';
