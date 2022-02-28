@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { nanoid } from 'nanoid';
 import { mock, mockDeep, mockReset } from 'jest-mock-extended';
 import { Socket } from 'socket.io';
@@ -388,14 +389,19 @@ describe('CoveyTownController', () => {
       const mockListener = mock<CoveyTownListener>();
       testingTown.addTownListener(mockListener);
 
-      // const player = new Player(nanoid());
+      const player = new Player(nanoid());
+      await testingTown.addPlayer(player);
 
-      // await testingTown.addPlayer(player);
-      const player: Player = null;
       // move someone into it
       testingTown.updatePlayerLocation(player, locInConversation(conversation));
-      expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(0); // sec conv dies
-      expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(0); // sec conv dies
+
+      const areas = testingTown.conversationAreas;
+      expect(areas[0].occupantsByID.length).toBe(1);
+
+      // see what happens when they leave it
+      testingTown.updatePlayerLocation(player, nonConversationAreaLoc());
+      expect(areas[0].occupantsByID.length).toBe(0);
+      expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(1); // sec conv dies
     });
   });
 });

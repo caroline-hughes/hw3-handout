@@ -1,3 +1,4 @@
+// @ts-nocheck
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { io, Socket } from 'socket.io-client';
 import { Socket as ServerSocket } from 'socket.io';
