@@ -391,9 +391,9 @@ describe('CoveyTownController', () => {
       // const player = new Player(nanoid());
 
       // await testingTown.addPlayer(player);
-      const player: Player = null;
+      // const player: Player = undefined;
       // move someone into it
-      testingTown.updatePlayerLocation(player, locInConversation(conversation));
+      testingTown.updatePlayerLocation(null, locInConversation(conversation));
       expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(0); // sec conv dies
       expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(0); // sec conv dies
     });
