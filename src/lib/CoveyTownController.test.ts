@@ -276,7 +276,78 @@ describe('CoveyTownController', () => {
       expect(areas[0].topic).toEqual(newConversationArea.topic);
       expect(areas[0].boundingBox).toEqual(newConversationArea.boundingBox);
     });
+
+    it('returns false when trying to create a conversation with no topic', async () => {
+      const conversation = createConversationForTesting({
+        noTopic: true,
+      });
+      const result = testingTown.addConversationArea(conversation);
+      expect(result).toBeFalsy();
+    });
+
+    it('returns false when trying to create a conversation whose label matches one that already exists', async () => {
+      const conversation = createConversationForTesting({
+        conversationLabel: 'carolinesConvo',
+      });
+      const result1 = testingTown.addConversationArea(conversation);
+      expect(result1).toBeTruthy();
+
+
+      const conversation2 = createConversationForTesting({
+        conversationLabel: 'carolinesConvo',
+      });
+      const result2 = testingTown.addConversationArea(conversation2);
+      expect(result2).toBeFalsy();
+    });
+
+    it('returns false when trying to create a conversation which overlaps the bounding box of an existing one', async () => {
+      const conversation = createConversationForTesting({
+        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+      });
+      const result1 = testingTown.addConversationArea(conversation);
+      expect(result1).toBeTruthy();
+
+
+      const conversation2 = createConversationForTesting({
+        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+      });
+      const result2 = testingTown.addConversationArea(conversation2);
+      expect(result2).toBeFalsy();
+    });
+
+    it('returns true when creating a conversation with a defined topic, a unique label, and a non-overlapping bounding box', async () => {
+      const conversation = createConversationForTesting({
+        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+        conversationLabel: 'applesConvo1',
+        conversationTopic: 'apples',
+      });
+      const result1 = testingTown.addConversationArea(conversation);
+      expect(result1).toBeTruthy();
+
+      const conversation2 = createConversationForTesting({
+        boundingBox: { x: 100, y: 100, height: 5, width: 5 },
+        conversationLabel: 'applesConvo2',
+        conversationTopic: 'apples',
+      });
+      const result2 = testingTown.addConversationArea(conversation2);
+      expect(result2).toBeTruthy();
+    });
+
+    it('adds players inside the bounding box to the occupants list and updates their active conversation field', async () => {
+      
+      
+    //   const conversation = createConversationForTesting({
+    //     noTopic: true,
+    //   });
+    //   const result = testingTown.addConversationArea(conversation);
+    //   expect(result).toBeFalsy();
+    // });
   });
+
+
+
+
+
   describe('updatePlayerLocation', () => {
     let testingTown: CoveyTownController;
     beforeEach(() => {

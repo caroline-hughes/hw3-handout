@@ -110,12 +110,13 @@ export function createConversationForTesting(params?: {
   conversationTopic?: string;
   boundingBox?: BoundingBox;
   occupantsByID?: string[];
+  noTopic?: boolean;
 }): ServerConversationArea {
   return {
     boundingBox: params?.boundingBox || { height: 100, width: 100, x: 400, y: 400 },
     label: params?.conversationLabel || nanoid(),
     occupantsByID: params?.occupantsByID || [],
-    topic: params?.conversationTopic || nanoid(),
+    topic: params?.noTopic ? '' : params?.conversationTopic || nanoid(),
   };
 }
 
