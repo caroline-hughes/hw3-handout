@@ -377,28 +377,16 @@ describe('CoveyTownController', () => {
       expect(conversation2.occupantsByID.length).toEqual(1);
       expect(conversation2.occupantsByID[0]).toEqual(player2ID);
 
+      expect(testingTown.conversationAreas.length).toEqual(1);
+      expect(testingTown.conversationAreas[0].label).toEqual('second');
+
       // the final occupant leaves the conversation
       testingTown.updatePlayerLocation(player2, nonConversationAreaLoc());
       expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(6); // no change
       expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(2); // sec conv dies
       expect(conversation2.occupantsByID.length).toEqual(0);
-    });
 
-    // it('removePlayerFromConversationArea', async () => {
-    //   const conversation = createConversationForTesting({
-    //     boundingBox: { x: 10, y: 10, height: 5, width: 5 },
-    //   });
-    //   testingTown.addConversationArea(conversation);
-    //   const mockListener = mock<CoveyTownListener>();
-    //   testingTown.addTownListener(mockListener);
-
-    //   const player = new Player(nanoid());
-    //   await testingTown.addPlayer(player);
-
-    //   // move someone into it
-    //   // testingTown.updatePlayerLocation(null, locInConversation(conversation));
-    //   expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(0); // sec conv dies
-
+      expect(testingTown.conversationAreas.length).toEqual(0);
     });
   });
 });
