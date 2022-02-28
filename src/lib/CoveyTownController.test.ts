@@ -345,6 +345,7 @@ describe('CoveyTownController', () => {
       await testingTown.addPlayer(player1);
       const player2 = new Player(nanoid());
       await testingTown.addPlayer(player2);
+      const player2ID = player2.id;
 
       // a player moves around outside of any conversation
       testingTown.updatePlayerLocation(player1, nonConversationAreaLoc());
@@ -373,29 +374,31 @@ describe('CoveyTownController', () => {
       testingTown.updatePlayerLocation(player1, nonConversationAreaLoc());
       expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(6); // sec is updated
       expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(1); // still someone in it
+      expect(conversation2.occupantsByID.length).toEqual(1);
+      expect(conversation2.occupantsByID[0]).toEqual(player2ID);
 
       // the final occupant leaves the conversation
       testingTown.updatePlayerLocation(player2, nonConversationAreaLoc());
       expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(6); // no change
       expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(2); // sec conv dies
+      expect(conversation2.occupantsByID.length).toEqual(0);
     });
 
-    it('try to hit the case where either 1.null person to remove is passed or 2. theres already no one in the conv when u try to remove', async () => {
-      const conversation = createConversationForTesting({
-        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
-      });
-      testingTown.addConversationArea(conversation);
-      const mockListener = mock<CoveyTownListener>();
-      testingTown.addTownListener(mockListener);
+    // it('removePlayerFromConversationArea', async () => {
+    //   const conversation = createConversationForTesting({
+    //     boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+    //   });
+    //   testingTown.addConversationArea(conversation);
+    //   const mockListener = mock<CoveyTownListener>();
+    //   testingTown.addTownListener(mockListener);
 
-      // const player = new Player(nanoid());
+    //   const player = new Player(nanoid());
+    //   await testingTown.addPlayer(player);
 
-      // await testingTown.addPlayer(player);
-      // const player: Player = undefined;
-      // move someone into it
-      testingTown.updatePlayerLocation(null, locInConversation(conversation));
-      expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(0); // sec conv dies
-      expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(0); // sec conv dies
+    //   // move someone into it
+    //   // testingTown.updatePlayerLocation(null, locInConversation(conversation));
+    //   expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(0); // sec conv dies
+
     });
   });
 });
