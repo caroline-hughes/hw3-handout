@@ -267,14 +267,18 @@ describe('CoveyTownController', () => {
       testingTown = new CoveyTownController(townName, false);
     });
     it('should add the conversation area to the list of conversation areas', () => {
+      expect(testingTown.conversationAreas.length).toEqual(0);
+
       const newConversationArea = createConversationForTesting();
       const result = testingTown.addConversationArea(newConversationArea);
       expect(result).toBe(true);
+
       const areas = testingTown.conversationAreas;
       expect(areas.length).toEqual(1);
       expect(areas[0].label).toEqual(newConversationArea.label);
       expect(areas[0].topic).toEqual(newConversationArea.topic);
       expect(areas[0].boundingBox).toEqual(newConversationArea.boundingBox);
+      expect(areas[0].occupantsByID.length).toEqual(0);
     });
 
     it('returns false when trying to create a conversation with no topic', async () => {
@@ -282,7 +286,7 @@ describe('CoveyTownController', () => {
         noTopic: true,
       });
       const result = testingTown.addConversationArea(conversation);
-      expect(result).toBeFalsy();
+      expect(result).toBe(false);
     });
 
     it('returns false when trying to create a conversation whose label matches one that already exists', async () => {
@@ -290,14 +294,14 @@ describe('CoveyTownController', () => {
         conversationLabel: 'carolinesConvo',
       });
       const result1 = testingTown.addConversationArea(conversation);
-      expect(result1).toBeTruthy();
+      expect(result1).toBe(true);
 
 
       const conversation2 = createConversationForTesting({
         conversationLabel: 'carolinesConvo',
       });
       const result2 = testingTown.addConversationArea(conversation2);
-      expect(result2).toBeFalsy();
+      expect(result2).toBe(false);
     });
 
     it('returns false when trying to create a conversation which overlaps the bounding box of an existing one', async () => {
@@ -305,14 +309,14 @@ describe('CoveyTownController', () => {
         boundingBox: { x: 10, y: 10, height: 5, width: 5 },
       });
       const result1 = testingTown.addConversationArea(conversation);
-      expect(result1).toBeTruthy();
+      expect(result1).toBe(true);
 
 
       const conversation2 = createConversationForTesting({
         boundingBox: { x: 10, y: 10, height: 5, width: 5 },
       });
       const result2 = testingTown.addConversationArea(conversation2);
-      expect(result2).toBeFalsy();
+      expect(result2).toBe(false);
     });
 
     it('returns true when creating a conversation with a defined topic, a unique label, and a non-overlapping bounding box', async () => {
@@ -322,7 +326,7 @@ describe('CoveyTownController', () => {
         conversationTopic: 'apples',
       });
       const result1 = testingTown.addConversationArea(conversation);
-      expect(result1).toBeTruthy();
+      expect(result1).toBe(true);
 
       const conversation2 = createConversationForTesting({
         boundingBox: { x: 100, y: 100, height: 5, width: 5 },
@@ -330,12 +334,13 @@ describe('CoveyTownController', () => {
         conversationTopic: 'apples',
       });
       const result2 = testingTown.addConversationArea(conversation2);
-      expect(result2).toBeTruthy();
+      expect(result2).toBe(true);
+
+      expect(conversation2.label).toEqual('applesConvo2');
+      expect(conversation2.topic).toEqual('apples');
     });
 
-    it('adds players inside the bounding box to the occupants list and updates their active conversation field', async () => {
-      
-      
+    // it('adds players inside the bounding box to the occupants list and updates their active conversation field', async () => {
     //   const conversation = createConversationForTesting({
     //     noTopic: true,
     //   });
@@ -380,7 +385,7 @@ describe('CoveyTownController', () => {
       expect(areas[0].occupantsByID[0]).toBe(player.id);
     });
 
-    it('1. should NOT emit an onConversationUpdated event when a player doesn’t enter somewhere', async () => {
+    it('should not emit an onConversationUpdated event when a player doesn not enter a conversation', async () => {
       const mockListener = mock<CoveyTownListener>();
       testingTown.addTownListener(mockListener);
 
@@ -458,6 +463,73 @@ describe('CoveyTownController', () => {
       expect(conversation2.occupantsByID.length).toEqual(0);
 
       expect(testingTown.conversationAreas.length).toEqual(0);
+    });
+
+    it('Gets the last case for occupants array', async () => {
+      const conversation = createConversationForTesting({
+        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+        conversationLabel: 'first',
+      });
+      testingTown.addConversationArea(conversation);
+
+      const conversation2 = createConversationForTesting({
+        boundingBox: { x: 100, y: 100, height: 5, width: 5 },
+        conversationLabel: 'second',
+      });
+      testingTown.addConversationArea(conversation2);
+      const mockListener = mock<CoveyTownListener>();
+      testingTown.addTownListener(mockListener);
+
+      const player1 = new Player(nanoid());
+      await testingTown.addPlayer(player1);
+      const player1ID = player1.id;
+
+      const player2 = new Player(nanoid());
+      await testingTown.addPlayer(player2);
+
+      // two players move into a conversation
+      testingTown.updatePlayerLocation(player1, locInConversation(conversation));
+      testingTown.updatePlayerLocation(player2, locInConversation(conversation));
+      expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(2);
+
+      // one occupant leaves the conversation to go to another conversation
+      testingTown.updatePlayerLocation(player2, locInConversation(conversation2));
+      expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(4); // two more updated calls
+      expect(conversation.occupantsByID.length).toEqual(1);
+      expect(conversation.occupantsByID[0]).toEqual(player1ID);
+    });
+
+    it('Gets the last case for conversations array', async () => {
+      const conversation = createConversationForTesting({
+        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+        conversationLabel: 'first',
+      });
+      testingTown.addConversationArea(conversation);
+
+      const conversation2 = createConversationForTesting({
+        boundingBox: { x: 100, y: 100, height: 5, width: 5 },
+        conversationLabel: 'second',
+      });
+      testingTown.addConversationArea(conversation2);
+      const mockListener = mock<CoveyTownListener>();
+      testingTown.addTownListener(mockListener);
+
+      const player1 = new Player(nanoid());
+      await testingTown.addPlayer(player1);
+
+      const player2 = new Player(nanoid());
+      await testingTown.addPlayer(player2);
+
+      // player1 is in conversation
+      testingTown.updatePlayerLocation(player1, locInConversation(conversation));
+      // player2 is in conversation2
+      testingTown.updatePlayerLocation(player2, locInConversation(conversation2));
+
+      // player 2 leaves conversation2, causing it to be destroyed
+      testingTown.updatePlayerLocation(player2, nonConversationAreaLoc());
+      expect(mockListener.onConversationAreaDestroyed).toHaveBeenCalledTimes(1);
+
+      expect(testingTown.conversationAreas[0].label).toEqual('first');
     });
   });
 });
