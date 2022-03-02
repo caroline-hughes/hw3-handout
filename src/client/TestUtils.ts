@@ -120,11 +120,6 @@ export function createConversationForTesting(params?: {
   };
 }
 
-// export function townWithCoversationAndListener(testingTown: CoveyTownController, conversation: ServerConversationArea, mockListener): void {
-//   testingTown.addConversationArea(conversation);
-//   testingTown.addTownListener(mockListener);
-// }
-
 export function locInConversation(conversation: ServerConversationArea): UserLocation {
   const loc: UserLocation = {
     moving: false,
@@ -164,4 +159,14 @@ export function occupiedConversationForTesting(testingTown: CoveyTownController)
   });
   testingTown.addConversationArea(conversation);
   return conversation;
+}
+
+export function createUserLocation(xCoord: number, yCoord: number): UserLocation  {
+  const loc: UserLocation = {
+    moving: false,
+    rotation: 'front',
+    x: xCoord,
+    y: yCoord,
+  };
+  return loc; 
 }
