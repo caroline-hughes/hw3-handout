@@ -406,7 +406,7 @@ describe('CoveyTownController', () => {
 
       // one occupant leaves the conversation to go to another conversation
       testingTown.updatePlayerLocation(player2, locInConversation(conversation2));
-      expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(4); // two more updated calls
+      expect(mockListener.onConversationAreaUpdated).toHaveBeenCalledTimes(4);
       expect(conversation.occupantsByID.length).toEqual(1);
       expect(conversation.occupantsByID[0]).toEqual(player1ID);
     });
@@ -469,15 +469,13 @@ describe('CoveyTownController', () => {
       expect(areas[0].occupantsByID.length).toEqual(0);
     });
 
-    it('returns false when trying to create a conversation with no topic', async () => {
-      const conversation = createConversationForTesting({
-        noTopic: true,
-      });
+    it('returns false when adding a conversation with undefined topic', async () => {
+      const conversation = createConversationForTesting({ noTopic: true });
       const result = testingTown.addConversationArea(conversation);
       expect(result).toBe(false);
     });
 
-    it('returns false when trying to create a conversation whose label matches one that already exists', async () => {
+    it('returns false when adding a conversation with existing label', async () => {
       const conversation = createConversationForTesting({
         boundingBox: { x: 10, y: 10, height: 5, width: 5 },
         conversationLabel: 'carolinesConvo',
@@ -496,59 +494,49 @@ describe('CoveyTownController', () => {
 
     it('returns false when trying to create a conversation which overlaps the bounding box of an existing one', async () => {
       const conversation = createConversationForTesting();
-      const result1 = testingTown.addConversationArea(conversation);
-      expect(result1).toBe(true);
+      testingTown.addConversationArea(conversation);
 
       const overlapsQ1 = createConversationForTesting({
         boundingBox: { x: 350, y: 450, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(overlapsQ1)).toBe(false);
-
       const overlapsQ2 = createConversationForTesting({
         boundingBox: { x: 450, y: 450, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(overlapsQ2)).toBe(false);
-
       const overlapsQ3 = createConversationForTesting({
         boundingBox: { x: 450, y: 350, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(overlapsQ3)).toBe(false);
-
       const overlapsQ4 = createConversationForTesting({
         boundingBox: { x: 350, y: 350, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(overlapsQ4)).toBe(false);
 
+      expect(testingTown.addConversationArea(overlapsQ1) &&
+        testingTown.addConversationArea(overlapsQ2) && 
+        testingTown.addConversationArea(overlapsQ3) &&
+        testingTown.addConversationArea(overlapsQ4)).toBeFalsy();
       expect(testingTown.conversationAreas.length).toEqual(1);
     });
 
     it('allows creation of conversation areas which do not overlap', async () => {
       const conversation = createConversationForTesting();
-      const result1 = testingTown.addConversationArea(conversation);
-      expect(result1).toBe(true);
+      testingTown.addConversationArea(conversation);
 
       const testLeftBoundMutation = createConversationForTesting({
         boundingBox: { x: 200, y: 400, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(testLeftBoundMutation)).toBe(true);
-      expect(testingTown.conversationAreas.length).toEqual(2);
-
       const testRightBoundMutation = createConversationForTesting({
         boundingBox: { x: 600, y: 400, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(testRightBoundMutation)).toBe(true);
-      expect(testingTown.conversationAreas.length).toEqual(3);
-
       const testTopBoundMutation = createConversationForTesting({
         boundingBox: { x: 400, y: 600, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(testTopBoundMutation)).toBe(true);
-      expect(testingTown.conversationAreas.length).toEqual(4);
-
       const testBottomBoundMutation = createConversationForTesting({
         boundingBox: { x: 400, y: 200, height: 5, width: 5 },
       });
-      expect(testingTown.addConversationArea(testBottomBoundMutation)).toBe(true);
+
+      expect(testingTown.addConversationArea(testLeftBoundMutation) &&
+        testingTown.addConversationArea(testRightBoundMutation) && 
+        testingTown.addConversationArea(testTopBoundMutation) &&
+        testingTown.addConversationArea(testBottomBoundMutation)).toBeTruthy();
       expect(testingTown.conversationAreas.length).toEqual(5);
     });
 
@@ -559,29 +547,24 @@ describe('CoveyTownController', () => {
       const shareLeftBound = createConversationForTesting({
         boundingBox: { x: 345, y: 400, height: 10, width: 10 },
       });
-      expect(testingTown.addConversationArea(shareLeftBound)).toBe(true);
-      expect(testingTown.conversationAreas.length).toEqual(2);
-
       const shareRightBound = createConversationForTesting({
         boundingBox: { x: 455, y: 400, height: 10, width: 10 },
       });
-      expect(testingTown.addConversationArea(shareRightBound)).toBe(true);
-      expect(testingTown.conversationAreas.length).toEqual(3);
-
       const shareTopBound = createConversationForTesting({
         boundingBox: { x: 400, y: 455, height: 10, width: 10 },
       });
-      expect(testingTown.addConversationArea(shareTopBound)).toBe(true);
-      expect(testingTown.conversationAreas.length).toEqual(4);
-
       const shareBottomBound = createConversationForTesting({
         boundingBox: { x: 400, y: 345, height: 10, width: 10 },
       });
-      expect(testingTown.addConversationArea(shareBottomBound)).toBe(true);
+      expect(testingTown.addConversationArea(shareLeftBound) &&
+        testingTown.addConversationArea(shareRightBound) && 
+        testingTown.addConversationArea(shareTopBound) &&
+        testingTown.addConversationArea(shareBottomBound)).toBeTruthy();
       expect(testingTown.conversationAreas.length).toEqual(5);
     });
 
-    it('returns true when creating a conversation with a defined topic, a unique label, and a non-overlapping bounding box', async () => {
+    it('returns true when adding a conversation which has a defined topic, ' +
+    'unique label, and non-overlapping bounds', async () => {
       const conversation = createConversationForTesting({
         boundingBox: { x: 10, y: 10, height: 5, width: 5 },
         conversationLabel: 'applesConvo1',
@@ -602,14 +585,44 @@ describe('CoveyTownController', () => {
       expect(conversation2.topic).toEqual('apples');
     });
 
-    it('adds players inside the bounding box to the occupants list and updates their active conversation field', async () => {
+    it('does not add player outside the bounds to the occupants list' +
+    'nor sets their active conversation field', async () => {
       const mockListener = mock<CoveyTownListener>();
       testingTown.addTownListener(mockListener);
 
-      const playerOutside = new Player(nanoid());
-      await testingTown.addPlayer(playerOutside);
-      testingTown.updatePlayerLocation(playerOutside, nonConversationAreaLoc());
-      expect(playerOutside.activeConversationArea).toBeFalsy();
+      const tooFarLeft = new Player(nanoid());
+      await testingTown.addPlayer(tooFarLeft);
+      testingTown.updatePlayerLocation(tooFarLeft, createUserLocation(349, 400));
+     
+      const tooFarRight = new Player(nanoid());
+      await testingTown.addPlayer(tooFarRight);
+      testingTown.updatePlayerLocation(tooFarRight, createUserLocation(451, 400));
+      expect(tooFarRight.activeConversationArea).toBeFalsy();
+
+      const tooFarUp = new Player(nanoid());
+      await testingTown.addPlayer(tooFarUp);
+      testingTown.updatePlayerLocation(tooFarUp, createUserLocation(400, 451));
+      expect(tooFarUp.activeConversationArea).toBeFalsy();
+
+      const tooFarDown = new Player(nanoid());
+      await testingTown.addPlayer(tooFarDown);
+      testingTown.updatePlayerLocation(tooFarDown, createUserLocation(400, 349));
+      expect(tooFarDown.activeConversationArea).toBeFalsy();
+
+      const conversation = createConversationForTesting();
+      testingTown.addConversationArea(conversation);
+
+      expect(conversation.occupantsByID.length).toEqual(0);
+      expect(tooFarLeft.activeConversationArea &&
+        tooFarRight.activeConversationArea &&
+        tooFarUp.activeConversationArea && 
+        tooFarDown.activeConversationArea).toBeFalsy();
+    });
+    
+    it('adds players inside the conversations bounds to its occupants list and updates ' +
+    'their active conversation field', async () => {
+      const mockListener = mock<CoveyTownListener>();
+      testingTown.addTownListener(mockListener);
 
       const playerInQ1 = new Player(nanoid());
       await testingTown.addPlayer(playerInQ1);
@@ -634,7 +647,6 @@ describe('CoveyTownController', () => {
       const areas = testingTown.conversationAreas;
       expect(areas.length).toEqual(1);
       expect(areas[0].occupantsByID.length).toEqual(4);
-      expect(playerOutside.activeConversationArea).toBeFalsy();
       expect(playerInQ1.activeConversationArea).toEqual(conversation);
       expect(playerInQ2.activeConversationArea).toEqual(conversation);
       expect(playerInQ3.activeConversationArea).toEqual(conversation);
