@@ -485,7 +485,6 @@ describe('CoveyTownController', () => {
       const result1 = testingTown.addConversationArea(conversation);
       expect(result1).toBe(true);
 
-
       const conversation2 = createConversationForTesting({
         boundingBox: { x: 100, y: 100, height: 5, width: 5 },
         conversationLabel: 'carolinesConvo',
@@ -496,18 +495,61 @@ describe('CoveyTownController', () => {
     });
 
     it('returns false when trying to create a conversation which overlaps the bounding box of an existing one', async () => {
-      const conversation = createConversationForTesting({
-        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
-      });
+      const conversation = createConversationForTesting();
       const result1 = testingTown.addConversationArea(conversation);
       expect(result1).toBe(true);
 
-
-      const conversation2 = createConversationForTesting({
-        boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+      const overlapsQ1 = createConversationForTesting({
+        boundingBox: { x: 350, y: 450, height: 5, width: 5 },
       });
-      const result2 = testingTown.addConversationArea(conversation2);
-      expect(result2).toBe(false);
+      expect(testingTown.addConversationArea(overlapsQ1)).toBe(false);
+
+      const overlapsQ2 = createConversationForTesting({
+        boundingBox: { x: 450, y: 450, height: 5, width: 5 },
+      });
+      expect(testingTown.addConversationArea(overlapsQ2)).toBe(false);
+
+      const overlapsQ3 = createConversationForTesting({
+        boundingBox: { x: 450, y: 350, height: 5, width: 5 },
+      });
+      expect(testingTown.addConversationArea(overlapsQ3)).toBe(false);
+
+      const overlapsQ4 = createConversationForTesting({
+        boundingBox: { x: 350, y: 350, height: 5, width: 5 },
+      });
+      expect(testingTown.addConversationArea(overlapsQ4)).toBe(false);
+
+      expect(testingTown.conversationAreas.length).toEqual(1);
+    });
+
+    it('allows creation of conversation areas which don not overlap', async () => {
+      const conversation = createConversationForTesting();
+      const result1 = testingTown.addConversationArea(conversation);
+      expect(result1).toBe(true);
+
+      const testLeftBoundMutation = createConversationForTesting({
+        boundingBox: { x: 200, y: 400, height: 5, width: 5 },
+      });
+      expect(testingTown.addConversationArea(testLeftBoundMutation)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(2);
+
+      const testRightBoundMutation = createConversationForTesting({
+        boundingBox: { x: 600, y: 400, height: 5, width: 5 },
+      });
+      expect(testingTown.addConversationArea(testRightBoundMutation)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(3);
+
+      const testTopBoundMutation = createConversationForTesting({
+        boundingBox: { x: 400, y: 600, height: 5, width: 5 },
+      });
+      expect(testingTown.addConversationArea(testTopBoundMutation)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(4);
+
+      const testBottomBoundMutation = createConversationForTesting({
+        boundingBox: { x: 400, y: 200, height: 5, width: 5 },
+      });
+      expect(testingTown.addConversationArea(testBottomBoundMutation)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(5);
     });
 
     it('returns true when creating a conversation with a defined topic, a unique label, and a non-overlapping bounding box', async () => {
