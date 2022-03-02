@@ -522,7 +522,7 @@ describe('CoveyTownController', () => {
       expect(testingTown.conversationAreas.length).toEqual(1);
     });
 
-    it('allows creation of conversation areas which don not overlap', async () => {
+    it('allows creation of conversation areas which do not overlap', async () => {
       const conversation = createConversationForTesting();
       const result1 = testingTown.addConversationArea(conversation);
       expect(result1).toBe(true);
@@ -549,6 +549,35 @@ describe('CoveyTownController', () => {
         boundingBox: { x: 400, y: 200, height: 5, width: 5 },
       });
       expect(testingTown.addConversationArea(testBottomBoundMutation)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(5);
+    });
+
+    it('allows creation of conversation areas which share a boundary with an existing one', async () => {
+      const conversation = createConversationForTesting();
+      testingTown.addConversationArea(conversation);
+
+      const shareLeftBound = createConversationForTesting({
+        boundingBox: { x: 345, y: 400, height: 10, width: 10 },
+      });
+      expect(testingTown.addConversationArea(shareLeftBound)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(2);
+
+      const shareRightBound = createConversationForTesting({
+        boundingBox: { x: 455, y: 400, height: 10, width: 10 },
+      });
+      expect(testingTown.addConversationArea(shareRightBound)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(3);
+
+      const shareTopBound = createConversationForTesting({
+        boundingBox: { x: 400, y: 455, height: 10, width: 10 },
+      });
+      expect(testingTown.addConversationArea(shareTopBound)).toBe(true);
+      expect(testingTown.conversationAreas.length).toEqual(4);
+
+      const shareBottomBound = createConversationForTesting({
+        boundingBox: { x: 400, y: 345, height: 10, width: 10 },
+      });
+      expect(testingTown.addConversationArea(shareBottomBound)).toBe(true);
       expect(testingTown.conversationAreas.length).toEqual(5);
     });
 
