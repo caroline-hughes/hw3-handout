@@ -641,5 +641,4 @@ describe('CoveyTownController', () => {
       expect(playerInQ4.activeConversationArea).toEqual(conversation);
     });
   });
-
 });
