@@ -64,11 +64,34 @@ describe('Create Conversation Area API', () => {
       userName: nanoid(),
       coveyTownID: testingTown.coveyTownID,
     });
-    await apiClient.createConversationArea({
+    const res = await apiClient.createConversationArea({
       conversationArea: createConversationForTesting(),
       coveyTownID: testingTown.coveyTownID,
       sessionToken: testingSession.coveySessionToken,
     });
+    expect(res).toEqual({});
+  });
+
+  it('Catches ', async () => {
+    jest.spyOn(requestHandlers, 'conversationAreaCreateHandler').mockImplementationOnce(() => {
+      throw new Error();
+    });
+    jest.spyOn(console, 'trace').mockImplementationOnce(() => {});
+
+    const testingTown = await createTownForTesting(undefined, true);
+    const testingSession = await apiClient.joinTown({
+      userName: nanoid(),
+      coveyTownID: testingTown.coveyTownID,
+    });
+
+    expect.assertions(1);
+    expect(await apiClient.createConversationArea({
+      conversationArea: createConversationForTesting(),
+      coveyTownID: testingTown.coveyTownID,
+      sessionToken: testingSession.coveySessionToken,
+    }).catch((e) => {
+      expect(String(e)).toEqual('Error: Request failed with status code 500');
+    }));
   });
 });
 
