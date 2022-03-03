@@ -10,6 +10,7 @@ import { UserLocation } from '../CoveyTypes';
 import { BoundingBox, ServerConversationArea } from './TownsServiceClient';
 import CoveyTownController from '../lib/CoveyTownController';
 import Player from '../types/Player';
+import PlayerSession from '../types/PlayerSession';
 
 export type RemoteServerPlayer = {
   location: UserLocation;
@@ -122,9 +123,10 @@ export function createConversationForTesting(params?: {
   };
 }
 
+// This function:
 // creates two conversations, adds them to the town
 // creates two players, adds them to the town
-// adds the given mock listener to the town 
+// adds the mock listener to the town 
 export async function twoConversationsTwoPlayers(testingTown: CoveyTownController,
   mockListener: CoveyTownListener) : Promise<{ 
     conversation1: ServerConversationArea; 
@@ -190,7 +192,6 @@ export function nonConversationAreaLoc(): UserLocation {
   return loc;
 }
 
-
 export async function twoPlayersInOneConversation(testingTown: CoveyTownController, mockListener: CoveyTownListener): Promise<{ 
   conversation1: ServerConversationArea; 
   conversation2: ServerConversationArea;
@@ -210,7 +211,6 @@ export async function twoPlayersInOneConversation(testingTown: CoveyTownControll
   };
 }
 
-
 export function occupiedConversationForTesting(testingTown: CoveyTownController): ServerConversationArea {
   const conversation: ServerConversationArea = createConversationForTesting({
     boundingBox: { x: 10, y: 10, height: 5, width: 5 },
@@ -228,4 +228,23 @@ export function createUserLocation(xCoord: number, yCoord: number): UserLocation
     y: yCoord,
   };
   return loc; 
+}
+
+export function caCreateHandlerHelper() : {
+  coveyTownID : string,
+  conversationArea : ServerConversationArea,
+  player : Player,
+  validSession : PlayerSession,
+} {
+  const coveyTownID = nanoid();
+  const conversationArea : ServerConversationArea = createConversationForTesting();
+  const player: Player = new Player(nanoid());
+  const validSession: PlayerSession = new PlayerSession(player);
+
+  return {
+    coveyTownID,
+    conversationArea,
+    player,
+    validSession,
+  };
 }
