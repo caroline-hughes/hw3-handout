@@ -5,9 +5,11 @@ import { Socket as ServerSocket } from 'socket.io';
 import { AddressInfo } from 'net';
 import http from 'http';
 import { nanoid } from 'nanoid';
+import CoveyTownListener from '../types/CoveyTownListener';
 import { UserLocation } from '../CoveyTypes';
 import { BoundingBox, ServerConversationArea } from './TownsServiceClient';
 import CoveyTownController from '../lib/CoveyTownController';
+import Player from '../types/Player';
 
 export type RemoteServerPlayer = {
   location: UserLocation;
@@ -120,6 +122,42 @@ export function createConversationForTesting(params?: {
   };
 }
 
+// creates two conversations, adds them to the town
+// creates two players, adds them to the town
+// adds the given mock listener to the town 
+export async function twoConversationsTwoPlayers(testingTown: CoveyTownController,
+  mockListener: CoveyTownListener) : Promise<{ 
+    conversation1: ServerConversationArea; 
+    conversation2: ServerConversationArea;
+    player1: Player;
+    player2: Player; 
+  }> {
+  const conversation1 = createConversationForTesting({
+    boundingBox: { x: 10, y: 10, height: 5, width: 5 },
+    conversationLabel: 'first',
+  });
+  testingTown.addConversationArea(conversation1);
+
+  const conversation2 = createConversationForTesting({
+    boundingBox: { x: 100, y: 100, height: 5, width: 5 },
+    conversationLabel: 'second',
+  });
+  testingTown.addConversationArea(conversation2);
+  testingTown.addTownListener(mockListener);
+
+  const player1 = new Player(nanoid());
+  await testingTown.addPlayer(player1);
+  const player2 = new Player(nanoid());
+  await testingTown.addPlayer(player2);
+
+  return {
+    conversation1,
+    conversation2,
+    player1,
+    player2,
+  };
+}
+
 export function locInConversation(conversation: ServerConversationArea): UserLocation {
   const loc: UserLocation = {
     moving: false,
@@ -151,6 +189,27 @@ export function nonConversationAreaLoc(): UserLocation {
   };
   return loc;
 }
+
+
+export async function twoPlayersInOneConversation(testingTown: CoveyTownController, mockListener: CoveyTownListener): Promise<{ 
+  conversation1: ServerConversationArea; 
+  conversation2: ServerConversationArea;
+  player1: Player;
+  player2: Player; 
+}> {
+  const obj = await twoConversationsTwoPlayers(testingTown, mockListener);
+  const { conversation1, conversation2, player1, player2 } = obj;
+  testingTown.updatePlayerLocation(player1, locInConversation(conversation1));
+  testingTown.updatePlayerLocation(player2, locInConversation(conversation1));
+
+  return {
+    conversation1,
+    conversation2,
+    player1,
+    player2,
+  };
+}
+
 
 export function occupiedConversationForTesting(testingTown: CoveyTownController): ServerConversationArea {
   const conversation: ServerConversationArea = createConversationForTesting({
